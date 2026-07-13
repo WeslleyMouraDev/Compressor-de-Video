@@ -158,7 +158,7 @@ btnStart.addEventListener('click', async () => {
         }
       });
     } else {
-      throw new Error((result && result.message) || 'Erro desconhecido ao iniciar a compressão.');
+      throw new Error((result && result.error) || 'Erro desconhecido ao iniciar compressão.');
     }
   } catch (error) {
     alert(`Erro ao iniciar a compressão: ${error.message}`);
@@ -235,9 +235,12 @@ window.api.onFinished(() => {
   globalStatusText.textContent = 'Concluído!';
   globalProgressBar.style.width = '100%';
   globalEtaText.textContent = 'Todos os vídeos foram comprimidos.';
-  btnStart.textContent = 'Reiniciar Compressor';
-  btnStart.disabled = false;
-  btnStart.addEventListener('click', () => {
+  
+  const newBtn = btnStart.cloneNode(true);
+  newBtn.textContent = 'Reiniciar Compressor';
+  newBtn.disabled = false;
+  btnStart.replaceWith(newBtn);
+  newBtn.addEventListener('click', () => {
     window.location.reload();
   });
 });
