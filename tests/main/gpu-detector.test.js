@@ -31,4 +31,15 @@ describe('GPU Detector', () => {
     expect(encoders.hevc).toBe('libx265');
     expect(encoders.h264).toBe('libx264');
   });
+
+  test('deve detectar GPU mesmo se apenas h264_nvenc estiver disponível, mantendo hevc em software', async () => {
+    exec.mockImplementation((cmd, callback) => {
+      callback(null, ' V..... h264_nvenc           NVIDIA NVENC h264 encoder (codec h264)', '');
+    });
+
+    const encoders = await detectGPUEncoders();
+    expect(encoders.type).toBe('GPU');
+    expect(encoders.h264).toBe('h264_nvenc');
+    expect(encoders.hevc).toBe('libx265');
+  });
 });
