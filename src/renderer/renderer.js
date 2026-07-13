@@ -134,25 +134,40 @@ btnStart.addEventListener('click', async () => {
   configPanel.classList.add('hidden');
   globalProgress.classList.remove('hidden');
 
-  const result = await window.api.startCompression({
-    tasks: videoQueue,
-    quality,
-    resolution
-  });
-
-  if (result.success) {
-    result.items.forEach((item, index) => {
-      const card = document.getElementById(`card-${index}`);
-      if (card) {
-        card.id = `card-${item.id}`;
-        const bar = document.getElementById(`bar-${index}`);
-        if (bar) bar.id = `bar-${item.id}`;
-        const pct = document.getElementById(`pct-${index}`);
-        if (pct) pct.id = `pct-${item.id}`;
-        const wrapper = document.getElementById(`progress-wrapper-${index}`);
-        if (wrapper) wrapper.id = `progress-wrapper-${item.id}`;
-      }
+  try {
+    const result = await window.api.startCompression({
+      tasks: videoQueue,
+      quality,
+      resolution
     });
+
+    if (result && result.success) {
+      result.items.forEach((item, index) => {
+        if (videoQueue[index]) {
+          videoQueue[index].id = item.id;
+        }
+        const card = document.getElementById(`card-${index}`);
+        if (card) {
+          card.id = `card-${item.id}`;
+          const bar = document.getElementById(`bar-${index}`);
+          if (bar) bar.id = `bar-${item.id}`;
+          const pct = document.getElementById(`pct-${index}`);
+          if (pct) pct.id = `pct-${item.id}`;
+          const wrapper = document.getElementById(`progress-wrapper-${index}`);
+          if (wrapper) wrapper.id = `progress-wrapper-${item.id}`;
+        }
+      });
+    } else {
+      throw new Error((result && result.message) || 'Erro desconhecido ao iniciar a compressão.');
+    }
+  } catch (error) {
+    alert(`Erro ao iniciar a compressão: ${error.message}`);
+    // Restaurar a interface em caso de falha
+    btnStart.disabled = false;
+    btnStart.textContent = 'Iniciar Compressão';
+    dropZone.style.display = 'block';
+    configPanel.classList.remove('hidden');
+    globalProgress.classList.add('hidden');
   }
 });
 
@@ -192,7 +207,7 @@ window.api.onSuccess(({ itemId, outputSize, outputPath }) => {
   if (card) card.classList.add('completed');
   
   if (wrapper) {
-    const file = videoQueue.find((_, i) => document.getElementById(`card-${itemId}`) ? true : false);
+    const file = videoQueue.find(f => f.id === itemId);
     const originalSize = file ? file.size : 1; 
     const savings = ((originalSize - outputSize) / originalSize) * 100;
 
