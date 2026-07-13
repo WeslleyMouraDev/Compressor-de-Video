@@ -221,6 +221,7 @@ class CompressionQueue {
     });
 
     command.on('error', (err) => {
+      fs.promises.unlink(outputPath).catch(() => {});
       onError(err.message);
     });
 

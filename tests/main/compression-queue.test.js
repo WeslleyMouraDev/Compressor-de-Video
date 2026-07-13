@@ -14,6 +14,9 @@ describe('CompressionQueue', () => {
     jest.clearAllMocks();
     fs.existsSync.mockReturnValue(false);
     fs.statSync.mockReturnValue({ size: 1000 });
+    fs.promises = {
+      unlink: jest.fn().mockResolvedValue()
+    };
     queue = new CompressionQueue({
       encoders: { h264: 'libx264', hevc: 'libx265', type: 'CPU' }
     });
@@ -310,6 +313,41 @@ describe('CompressionQueue', () => {
 
     // Test error event
     eventHandlers['error'](new Error('Erro no FFmpeg'));
+    expect(onError).toHaveBeenCalledWith('Erro no FFmpeg');
+  });
+
+  test('deve excluir arquivo de saída parcial em caso de erro', () => {
+    const eventHandlers = {};
+    const mockFfmpegCmd = {
+      videoCodec: jest.fn().mockReturnThis(),
+      outputOptions: jest.fn().mockReturnThis(),
+      videoFilters: jest.fn().mockReturnThis(),
+      audioCodec: jest.fn().mockReturnThis(),
+      on: jest.fn().mockImplementation((event, handler) => {
+        eventHandlers[event] = handler;
+        return mockFfmpegCmd;
+      }),
+      save: jest.fn().mockReturnThis()
+    };
+    ffmpeg.mockReturnValue(mockFfmpegCmd);
+
+    const item = {
+      filePath: 'input.mp4',
+      quality: 'low',
+      resolution: 'original',
+      startTime: Date.now()
+    };
+
+    const onProgress = jest.fn();
+    const onSuccess = jest.fn();
+    const onError = jest.fn();
+
+    queue._realCompress(item, 'output.mp4', onProgress, onSuccess, onError);
+
+    // Dispara o erro
+    eventHandlers['error'](new Error('Erro no FFmpeg'));
+
+    expect(fs.promises.unlink).toHaveBeenCalledWith('output.mp4');
     expect(onError).toHaveBeenCalledWith('Erro no FFmpeg');
   });
 
