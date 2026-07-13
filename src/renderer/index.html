@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compressor de Vídeo Premium</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="logo">🚀 VideoSqueeze</div>
+    <div id="gpu-badge" class="badge">Detectando Hardware...</div>
+  </header>
+
+  <main class="app-container">
+    <!-- ZONA DE IMPORTAÇÃO -->
+    <section id="drop-zone" class="drop-zone">
+      <div class="drop-content">
+        <span class="icon">📥</span>
+        <h2>Arraste seus vídeos aqui</h2>
+        <p>ou use as opções de seleção abaixo</p>
+        <div class="btn-group">
+          <button id="btn-select-files" class="btn primary">Selecionar Arquivos</button>
+          <button id="btn-select-dir" class="btn secondary">Selecionar Pasta</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAINEL DE CONFIGURAÇÕES -->
+    <section id="config-panel" class="config-panel hidden">
+      <h3>Configurações de Compressão</h3>
+      <div class="settings">
+        <div class="setting-group">
+          <label>Perfil de Qualidade</label>
+          <div class="pill-selector" id="quality-selector">
+            <button class="pill" data-value="high">Alta Qualidade</button>
+            <button class="pill active" data-value="balanced">Balanceado</button>
+            <button class="pill" data-value="low">Máxima Compressão</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label>Resolução de Saída</label>
+          <div class="pill-selector" id="resolution-selector">
+            <button class="pill active" data-value="original">Manter Original</button>
+            <button class="pill" data-value="1080p">Forçar 1080p</button>
+            <button class="pill" data-value="720p">Forçar 720p</button>
+          </div>
+        </div>
+      </div>
+      <button id="btn-start" class="btn action-btn">Iniciar Compressão</button>
+    </section>
+
+    <!-- PROGRESSO GLOBAL -->
+    <section id="global-progress" class="global-progress hidden">
+      <div class="progress-info">
+        <span id="global-status-text">Processando vídeo 1 de 5...</span>
+        <span id="global-eta-text">Tempo estimado: calculando...</span>
+      </div>
+      <div class="progress-bar-container">
+        <div id="global-progress-bar" class="progress-bar" style="width: 0%;"></div>
+      </div>
+    </section>
+
+    <!-- FILA DE VÍDEOS -->
+    <section id="queue-section" class="queue-section hidden">
+      <h3>Fila de Processamento</h3>
+      <div id="video-queue-list" class="queue-list"></div>
+    </section>
+  </main>
+</body>
+</html>
