@@ -150,6 +150,7 @@ describe('CompressionQueue', () => {
       filePath: 'input.mp4',
       quality: 'high',
       resolution: '1080p',
+      height: 1081,
       startTime: Date.now()
     };
 
@@ -179,6 +180,7 @@ describe('CompressionQueue', () => {
       filePath: 'input.mp4',
       quality: 'balanced',
       resolution: '720p',
+      height: 721,
       startTime: Date.now()
     };
 
@@ -191,6 +193,31 @@ describe('CompressionQueue', () => {
     expect(mockFfmpegCmd.videoFilters).toHaveBeenCalledWith('scale=1280:-2');
     expect(mockFfmpegCmd.audioCodec).toHaveBeenCalledWith('copy');
     expect(mockFfmpegCmd.save).toHaveBeenCalledWith('output.mp4');
+  });
+
+  test('não deve aplicar filtro de escala (upscale artificial) se a altura do vídeo for menor ou igual à resolução de saída configurada', () => {
+    const mockFfmpegCmd = {
+      videoCodec: jest.fn().mockReturnThis(),
+      outputOptions: jest.fn().mockReturnThis(),
+      videoFilters: jest.fn().mockReturnThis(),
+      audioCodec: jest.fn().mockReturnThis(),
+      on: jest.fn().mockReturnThis(),
+      save: jest.fn().mockReturnThis()
+    };
+    ffmpeg.mockReturnValue(mockFfmpegCmd);
+
+    const item = {
+      filePath: 'input.mp4',
+      quality: 'high',
+      resolution: '1080p',
+      height: 720,
+      startTime: Date.now()
+    };
+
+    queue.encoders = { h264: 'libx264', hevc: 'libx265', type: 'CPU' };
+    queue._realCompress(item, 'output.mp4', () => {}, () => {}, () => {});
+
+    expect(mockFfmpegCmd.videoFilters).not.toHaveBeenCalled();
   });
 
   test('deve configurar fluent-ffmpeg corretamente para codec H.264 em CPU', () => {

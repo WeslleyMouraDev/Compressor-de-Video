@@ -67,9 +67,11 @@ class CompressionQueue {
     this.totalDuration = 0;
     const promises = this.queue.map(async (item) => {
       if (fs.existsSync(item.filePath)) {
-        const duration = await this._getVideoDuration(item.filePath);
-        item.duration = duration;
-        return duration;
+        const meta = await this._getVideoMetadata(item.filePath);
+        item.duration = meta.duration;
+        item.width = meta.width;
+        item.height = meta.height;
+        return meta.duration;
       }
       return 0;
     });
@@ -77,13 +79,23 @@ class CompressionQueue {
     this.totalDuration = durations.reduce((acc, curr) => acc + curr, 0);
   }
 
-  _getVideoDuration(filePath) {
+  _getVideoMetadata(filePath) {
     return new Promise((resolve) => {
       ffmpeg.ffprobe(filePath, (err, metadata) => {
-        if (err || !metadata || !metadata.format) {
-          resolve(0);
+        if (err || !metadata) {
+          resolve({ duration: 0, width: 0, height: 0 });
         } else {
-          resolve(parseFloat(metadata.format.duration) || 0);
+          const duration = parseFloat(metadata.format ? metadata.format.duration : 0) || 0;
+          let width = 0;
+          let height = 0;
+          if (metadata.streams) {
+            const videoStream = metadata.streams.find(s => s.codec_type === 'video');
+            if (videoStream) {
+              width = parseInt(videoStream.width, 10) || 0;
+              height = parseInt(videoStream.height, 10) || 0;
+            }
+          }
+          resolve({ duration, width, height });
         }
       });
     });
@@ -184,10 +196,10 @@ class CompressionQueue {
       }
     }
 
-    // 3. Redimensionamento de Resolução
-    if (item.resolution === '1080p') {
+    // 3. Redimensionamento de Resolução (Evitar Upscale Artificial)
+    if (item.resolution === '1080p' && item.height > 1080) {
       command.videoFilters('scale=1920:-2');
-    } else if (item.resolution === '720p') {
+    } else if (item.resolution === '720p' && item.height > 720) {
       command.videoFilters('scale=1280:-2');
     }
 
