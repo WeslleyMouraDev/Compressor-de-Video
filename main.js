@@ -6,7 +6,7 @@ const { CompressionQueue } = require('./src/main/compression-queue');
 
 let mainWindow;
 let compressionQueue;
-let detectedEncoders = null;
+let detectedEncoders = { h264: 'libx264', hevc: 'libx265', type: 'CPU' };
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
@@ -29,8 +29,7 @@ async function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'src', 'renderer', 'index.html'));
 
-  // Detecção de GPU logo na inicialização
-  detectedEncoders = await detectGPUEncoders();
+  // Detecção de GPU removida da inicialização automática
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('gpu-status', detectedEncoders);
   });
@@ -172,3 +171,13 @@ ipcMain.handle('start-compression', async (event, { tasks, quality, resolution, 
   compressionQueue.start();
   return { success: true, items: queuedItems };
 });
+
+// 4. Detecção Manual de GPU sob demanda
+ipcMain.handle('check-hardware', async () => {
+  detectedEncoders = await detectGPUEncoders();
+  if (compressionQueue) {
+    compressionQueue.encoders = detectedEncoders;
+  }
+  return detectedEncoders;
+});
+

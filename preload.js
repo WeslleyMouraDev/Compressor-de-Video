@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld('api', {
   selectFiles: () => ipcRenderer.invoke('select-files'),
   selectDirectory: () => ipcRenderer.invoke('select-directory'),
   startCompression: (data) => ipcRenderer.invoke('start-compression', data),
+  checkHardware: () => ipcRenderer.invoke('check-hardware'),
   
   // Escutadores de Eventos do Main Process
   onGPUStatus: (callback) => ipcRenderer.on('gpu-status', (event, data) => callback(data)),
