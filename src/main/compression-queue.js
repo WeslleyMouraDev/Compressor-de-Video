@@ -178,21 +178,21 @@ class CompressionQueue {
 
     if (item.quality === 'high') {
       if (isEncoderGPU) {
-        command.outputOptions('-cq 19');
+        command.outputOptions(['-cq', '19']);
       } else {
-        command.outputOptions('-crf 19', '-preset veryfast');
+        command.outputOptions(['-crf', '19', '-preset', 'veryfast']);
       }
     } else if (item.quality === 'low') {
       if (isEncoderGPU) {
-        command.outputOptions('-cq 28');
+        command.outputOptions(['-cq', '28']);
       } else {
-        command.outputOptions('-crf 28', '-preset veryfast');
+        command.outputOptions(['-crf', '28', '-preset', 'veryfast']);
       }
     } else { // balanced
       if (isEncoderGPU) {
-        command.outputOptions('-cq 23');
+        command.outputOptions(['-cq', '23']);
       } else {
-        command.outputOptions('-crf 23', '-preset veryfast');
+        command.outputOptions(['-crf', '23', '-preset', 'veryfast']);
       }
     }
 
@@ -220,7 +220,9 @@ class CompressionQueue {
       onSuccess(outputPath);
     });
 
-    command.on('error', (err) => {
+    command.on('error', (err, stdout, stderr) => {
+      console.error('[FFmpeg ERROR]', err.message);
+      console.error('[FFmpeg STDERR]', stderr);
       fs.promises.unlink(outputPath).catch(() => {});
       onError(err.message);
     });

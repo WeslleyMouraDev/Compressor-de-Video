@@ -261,7 +261,7 @@ window.api.onError(({ itemId, error }) => {
   
   if (card) card.classList.add('error');
   if (wrapper) {
-    wrapper.innerHTML = `<span class="error-text">Erro</span>`;
+    wrapper.innerHTML = `<span class="error-text" title="${error}">Erro: ${error}</span>`;
   }
   console.error(`Erro no vídeo ${itemId}:`, error);
 });

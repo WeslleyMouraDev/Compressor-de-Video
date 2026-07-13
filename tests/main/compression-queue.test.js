@@ -162,7 +162,7 @@ describe('CompressionQueue', () => {
 
     expect(ffmpeg).toHaveBeenCalledWith('input.mp4');
     expect(mockFfmpegCmd.videoCodec).toHaveBeenCalledWith('libx265');
-    expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith('-crf 19', '-preset veryfast');
+    expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith(['-crf', '19', '-preset', 'veryfast']);
     expect(mockFfmpegCmd.videoFilters).toHaveBeenCalledWith('scale=1920:-2');
     expect(mockFfmpegCmd.audioCodec).toHaveBeenCalledWith('copy');
     expect(mockFfmpegCmd.save).toHaveBeenCalledWith('output.mp4');
@@ -192,7 +192,7 @@ describe('CompressionQueue', () => {
 
     expect(ffmpeg).toHaveBeenCalledWith('input.mp4');
     expect(mockFfmpegCmd.videoCodec).toHaveBeenCalledWith('hevc_nvenc');
-    expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith('-cq 23');
+    expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith(['-cq', '23']);
     expect(mockFfmpegCmd.videoFilters).toHaveBeenCalledWith('scale=1280:-2');
     expect(mockFfmpegCmd.audioCodec).toHaveBeenCalledWith('copy');
     expect(mockFfmpegCmd.save).toHaveBeenCalledWith('output.mp4');
@@ -246,7 +246,7 @@ describe('CompressionQueue', () => {
     queue._realCompress(item, 'output.mp4', () => {}, () => {}, () => {});
 
     expect(mockFfmpegCmd.videoCodec).toHaveBeenCalledWith('libx264');
-    expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith('-crf 19', '-preset veryfast');
+    expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith(['-crf', '19', '-preset', 'veryfast']);
   });
 
   test('deve configurar fluent-ffmpeg corretamente para codec H.264 em GPU', () => {
@@ -272,7 +272,7 @@ describe('CompressionQueue', () => {
     queue._realCompress(item, 'output.mp4', () => {}, () => {}, () => {});
 
     expect(mockFfmpegCmd.videoCodec).toHaveBeenCalledWith('h264_nvenc');
-    expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith('-cq 23');
+    expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith(['-cq', '23']);
   });
 
   test('deve disparar os callbacks corretos ao receber eventos do fluent-ffmpeg', () => {
