@@ -9,6 +9,7 @@ const globalStatusText = document.getElementById('global-status-text');
 const globalEtaText = document.getElementById('global-eta-text');
 const queueSection = document.getElementById('queue-section');
 const videoQueueList = document.getElementById('video-queue-list');
+const btnCheckHw = document.getElementById('btn-check-hw');
 const gpuBadge = document.getElementById('gpu-badge');
 
 let videoQueue = [];
@@ -31,13 +32,44 @@ function formatTime(seconds) {
   return mins > 0 ? `~${mins}m ${secs}s` : `~${secs}s`;
 }
 
-// 1. Escutar status da GPU
-window.api.onGPUStatus((status) => {
-  gpuBadge.textContent = status.type === 'GPU' 
-    ? `GPU ATIVA (${status.hevc})` 
-    : 'CPU ATIVA';
+// Função auxiliar para atualizar o badge de hardware
+function updateHwBadge(status) {
   if (status.type === 'GPU') {
+    gpuBadge.textContent = `⚡ GPU ATIVA (${status.hevc})`;
+    gpuBadge.classList.remove('badge-cpu');
     gpuBadge.classList.add('gpu-active');
+  } else {
+    gpuBadge.textContent = '⚙️ CPU';
+    gpuBadge.classList.remove('gpu-active');
+    gpuBadge.classList.add('badge-cpu');
+  }
+}
+
+// 1. Escutar status de hardware (enviado pelo Main ao carregar)
+window.api.onGPUStatus((status) => {
+  updateHwBadge(status);
+});
+
+// 2. Botão de verificação de hardware sob demanda
+btnCheckHw.addEventListener('click', async () => {
+  btnCheckHw.disabled = true;
+  btnCheckHw.textContent = 'Verificando...';
+  try {
+    const status = await window.api.checkHardware();
+    updateHwBadge(status);
+    btnCheckHw.textContent = status.type === 'GPU'
+      ? '✅ Aceleração Ativada'
+      : '⚙️ Nenhuma GPU Compatível';
+    setTimeout(() => {
+      btnCheckHw.textContent = 'Verificar Aceleração de Hardware';
+      btnCheckHw.disabled = false;
+    }, 3000);
+  } catch (err) {
+    btnCheckHw.textContent = 'Erro ao verificar';
+    setTimeout(() => {
+      btnCheckHw.textContent = 'Verificar Aceleração de Hardware';
+      btnCheckHw.disabled = false;
+    }, 3000);
   }
 });
 

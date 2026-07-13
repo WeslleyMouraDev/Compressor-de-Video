@@ -29,7 +29,7 @@ async function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'src', 'renderer', 'index.html'));
 
-  // Detecção de GPU removida da inicialização automática
+  // Envia o status de CPU (padrão) assim que a janela termina de carregar
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('gpu-status', detectedEncoders);
   });
@@ -172,7 +172,7 @@ ipcMain.handle('start-compression', async (event, { tasks, quality, resolution, 
   return { success: true, items: queuedItems };
 });
 
-// 4. Detecção Manual de GPU sob demanda
+// 4. Verificação de Hardware (sob demanda)
 ipcMain.handle('check-hardware', async () => {
   detectedEncoders = await detectGPUEncoders();
   if (compressionQueue) {
@@ -180,4 +180,3 @@ ipcMain.handle('check-hardware', async () => {
   }
   return detectedEncoders;
 });
-

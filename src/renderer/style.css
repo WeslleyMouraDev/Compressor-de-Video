@@ -61,6 +61,43 @@ body {
   background: rgba(16, 185, 129, 0.05);
 }
 
+.badge.badge-cpu {
+  color: var(--text-muted);
+  border-color: rgba(156, 163, 175, 0.3);
+}
+
+.header-hw {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  -webkit-app-region: no-drag;
+}
+
+.btn-check-hw {
+  background: none;
+  border: 1px solid rgba(138, 43, 226, 0.35);
+  color: rgba(138, 43, 226, 0.85);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+}
+
+.btn-check-hw:hover {
+  background: rgba(138, 43, 226, 0.12);
+  border-color: rgba(138, 43, 226, 0.65);
+  color: #a855f7;
+}
+
+.btn-check-hw:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Layout principal */
 .app-container {
   flex: 1;
