@@ -60,11 +60,25 @@ ipcMain.handle('select-files', async () => {
   });
   if (result.canceled) return [];
   
-  return result.filePaths.map(filePath => ({
-    filePath,
-    fileName: path.basename(filePath),
-    size: fs.statSync(filePath).size
-  }));
+  const files = await Promise.all(
+    result.filePaths.map(async (filePath) => {
+      try {
+        const stat = await fs.promises.stat(filePath);
+        return {
+          filePath,
+          fileName: path.basename(filePath),
+          size: stat.size
+        };
+      } catch (error) {
+        return {
+          filePath,
+          fileName: path.basename(filePath),
+          size: 0
+        };
+      }
+    })
+  );
+  return files;
 });
 
 // 2. Seleção de Diretório Completo (filtra por vídeos contidos nele)
