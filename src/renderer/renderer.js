@@ -125,6 +125,8 @@ btnStart.addEventListener('click', async () => {
 
   const quality = qualitySelector.querySelector('.pill.active').dataset.value;
   const resolution = resolutionSelector.querySelector('.pill.active').dataset.value;
+  const codecSelector = document.getElementById('codec-selector');
+  const codec = codecSelector.querySelector('.pill.active').dataset.value;
 
   btnStart.disabled = true;
   btnStart.textContent = 'Processando...';
@@ -138,7 +140,8 @@ btnStart.addEventListener('click', async () => {
     const result = await window.api.startCompression({
       tasks: videoQueue,
       quality,
-      resolution
+      resolution,
+      codec
     });
 
     if (result && result.success) {

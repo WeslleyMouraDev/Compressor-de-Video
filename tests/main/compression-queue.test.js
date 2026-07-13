@@ -193,6 +193,58 @@ describe('CompressionQueue', () => {
     expect(mockFfmpegCmd.save).toHaveBeenCalledWith('output.mp4');
   });
 
+  test('deve configurar fluent-ffmpeg corretamente para codec H.264 em CPU', () => {
+    const mockFfmpegCmd = {
+      videoCodec: jest.fn().mockReturnThis(),
+      outputOptions: jest.fn().mockReturnThis(),
+      videoFilters: jest.fn().mockReturnThis(),
+      audioCodec: jest.fn().mockReturnThis(),
+      on: jest.fn().mockReturnThis(),
+      save: jest.fn().mockReturnThis()
+    };
+    ffmpeg.mockReturnValue(mockFfmpegCmd);
+
+    const item = {
+      filePath: 'input.mp4',
+      quality: 'high',
+      resolution: 'original',
+      codec: 'h264',
+      startTime: Date.now()
+    };
+
+    queue.encoders = { h264: 'libx264', hevc: 'libx265', type: 'CPU' };
+    queue._realCompress(item, 'output.mp4', () => {}, () => {}, () => {});
+
+    expect(mockFfmpegCmd.videoCodec).toHaveBeenCalledWith('libx264');
+    expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith('-crf 19', '-preset veryfast');
+  });
+
+  test('deve configurar fluent-ffmpeg corretamente para codec H.264 em GPU', () => {
+    const mockFfmpegCmd = {
+      videoCodec: jest.fn().mockReturnThis(),
+      outputOptions: jest.fn().mockReturnThis(),
+      videoFilters: jest.fn().mockReturnThis(),
+      audioCodec: jest.fn().mockReturnThis(),
+      on: jest.fn().mockReturnThis(),
+      save: jest.fn().mockReturnThis()
+    };
+    ffmpeg.mockReturnValue(mockFfmpegCmd);
+
+    const item = {
+      filePath: 'input.mp4',
+      quality: 'balanced',
+      resolution: 'original',
+      codec: 'h264',
+      startTime: Date.now()
+    };
+
+    queue.encoders = { h264: 'h264_nvenc', hevc: 'hevc_nvenc', type: 'GPU' };
+    queue._realCompress(item, 'output.mp4', () => {}, () => {}, () => {});
+
+    expect(mockFfmpegCmd.videoCodec).toHaveBeenCalledWith('h264_nvenc');
+    expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith('-cq 23');
+  });
+
   test('deve disparar os callbacks corretos ao receber eventos do fluent-ffmpeg', () => {
     const eventHandlers = {};
     const mockFfmpegCmd = {

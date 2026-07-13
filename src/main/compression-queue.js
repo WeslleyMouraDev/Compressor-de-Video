@@ -31,13 +31,14 @@ class CompressionQueue {
   }
 
   addToQueue(task) {
-    // task = { filePath, quality, resolution }
+    // task = { filePath, quality, resolution, codec }
     const item = {
       id: Math.random().toString(36).substring(2, 9),
       filePath: task.filePath,
       fileName: path.basename(task.filePath),
       quality: task.quality,
       resolution: task.resolution,
+      codec: task.codec || 'hevc',
       originalSize: fs.existsSync(task.filePath) ? fs.statSync(task.filePath).size : 0,
       duration: 0,
       status: 'pending'
@@ -152,26 +153,31 @@ class CompressionQueue {
     let command = ffmpeg(item.filePath);
 
     // 1. Configuração do Codec baseada na GPU ou CPU
-    // H.265 (HEVC) é preferido pela taxa de compressão
-    const isGPU = this.encoders.type === 'GPU';
-    const encoder = this.encoders.hevc;
+    let encoder;
+    if (item.codec === 'h264') {
+      encoder = this.encoders.h264 || 'libx264';
+    } else {
+      encoder = this.encoders.hevc || 'libx265';
+    }
     command.videoCodec(encoder);
 
     // 2. Parâmetros de qualidade baseados na seleção do usuário
+    const isEncoderGPU = encoder !== 'libx264' && encoder !== 'libx265';
+
     if (item.quality === 'high') {
-      if (isGPU) {
+      if (isEncoderGPU) {
         command.outputOptions('-cq 19');
       } else {
         command.outputOptions('-crf 19', '-preset veryfast');
       }
     } else if (item.quality === 'low') {
-      if (isGPU) {
+      if (isEncoderGPU) {
         command.outputOptions('-cq 28');
       } else {
         command.outputOptions('-crf 28', '-preset veryfast');
       }
     } else { // balanced
-      if (isGPU) {
+      if (isEncoderGPU) {
         command.outputOptions('-cq 23');
       } else {
         command.outputOptions('-crf 23', '-preset veryfast');
