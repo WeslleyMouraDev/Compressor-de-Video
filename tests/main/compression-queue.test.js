@@ -233,4 +233,85 @@ describe('CompressionQueue', () => {
     eventHandlers['error'](new Error('Erro no FFmpeg'));
     expect(onError).toHaveBeenCalledWith('Erro no FFmpeg');
   });
+
+  test('deve acumular duration de itens com falha em processedDuration para manter consistência', async () => {
+    fs.existsSync.mockImplementation((filePath) => !filePath.includes('comprimido'));
+    ffmpeg.ffprobe.mockImplementation((filePath, cb) => cb(null, { format: { duration: 120 } }));
+
+    queue.compressFunction = (item, outputPath, onProgress, onSuccess, onError) => {
+      onError('Erro de compressão simulado');
+    };
+
+    queue.addToQueue({ filePath: 'video1.mp4', quality: 'balanced', resolution: 'original' });
+    
+    await queue.start();
+    
+    expect(queue.processedDuration).toBe(120);
+  });
+
+  test('deve setar startTime somente após carregar as durações dos vídeos', async () => {
+    fs.existsSync.mockImplementation((filePath) => !filePath.includes('comprimido'));
+    ffmpeg.ffprobe.mockImplementation((filePath, cb) => {
+      expect(queue.startTime).toBeNull();
+      cb(null, { format: { duration: 10 } });
+    });
+
+    queue.compressFunction = (item, outputPath, onProgress, onSuccess) => {
+      onSuccess(outputPath);
+    };
+
+    queue.addToQueue({ filePath: 'video1.mp4', quality: 'balanced', resolution: 'original' });
+    
+    expect(queue.startTime).toBeNull();
+    await queue.start();
+    expect(queue.startTime).not.toBeNull();
+  });
+
+  test('deve capturar exceções síncronas na compressão e tratar como falha de item', (done) => {
+    fs.existsSync.mockImplementation((filePath) => !filePath.includes('comprimido'));
+    ffmpeg.ffprobe.mockImplementation((filePath, cb) => cb(null, { format: { duration: 50 } }));
+
+    queue.compressFunction = () => {
+      throw new Error('Erro síncrono na compressão');
+    };
+
+    queue.addToQueue({ filePath: 'video1.mp4', quality: 'balanced', resolution: 'original' });
+
+    queue.onItemError = (item, errMessage) => {
+      expect(item.status).toBe('error');
+      expect(errMessage).toBe('Erro síncrono na compressão');
+      expect(queue.processedDuration).toBe(50);
+    };
+
+    queue.onQueueFinished = () => {
+      expect(queue.active).toBe(false);
+      done();
+    };
+
+    queue.start();
+  });
+
+  test('deve carregar durações de vídeos em paralelo usando Promise.all', async () => {
+    let activeCalls = 0;
+    let maxConcurrentCalls = 0;
+
+    ffmpeg.ffprobe.mockImplementation((filePath, cb) => {
+      activeCalls++;
+      maxConcurrentCalls = Math.max(maxConcurrentCalls, activeCalls);
+      setTimeout(() => {
+        activeCalls--;
+        cb(null, { format: { duration: 10 } });
+      }, 10);
+    });
+
+    fs.existsSync.mockReturnValue(true);
+
+    queue.addToQueue({ filePath: 'video1.mp4', quality: 'balanced', resolution: 'original' });
+    queue.addToQueue({ filePath: 'video2.mp4', quality: 'balanced', resolution: 'original' });
+    queue.addToQueue({ filePath: 'video3.mp4', quality: 'balanced', resolution: 'original' });
+
+    await queue._loadVideoDurations();
+
+    expect(maxConcurrentCalls).toBe(3);
+  });
 });

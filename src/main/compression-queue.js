@@ -53,23 +53,27 @@ class CompressionQueue {
   async start() {
     if (this.active || this.queue.length === 0) return;
     this.active = true;
-    this.startTime = Date.now();
     this.processedDuration = 0;
 
     // Passo A: Obter a duração total de todos os vídeos na fila para cálculo do ETA Global
     await this._loadVideoDurations();
 
+    this.startTime = Date.now();
     this._processNext();
   }
 
   async _loadVideoDurations() {
     this.totalDuration = 0;
-    for (const item of this.queue) {
+    const promises = this.queue.map(async (item) => {
       if (fs.existsSync(item.filePath)) {
-        item.duration = await this._getVideoDuration(item.filePath);
-        this.totalDuration += item.duration;
+        const duration = await this._getVideoDuration(item.filePath);
+        item.duration = duration;
+        return duration;
       }
-    }
+      return 0;
+    });
+    const durations = await Promise.all(promises);
+    this.totalDuration = durations.reduce((acc, curr) => acc + curr, 0);
   }
 
   _getVideoDuration(filePath) {
@@ -101,39 +105,47 @@ class CompressionQueue {
     const nameWithoutExt = path.basename(this.currentItem.filePath, ext);
     const outputPath = path.join(outputDir, `${nameWithoutExt}_comprimido_${this.currentItem.id}${ext}`);
 
-    this.compressFunction(
-      this.currentItem,
-      outputPath,
-      (percent, eta) => {
-        // Callback de progresso
-        if (this.onItemProgress) {
-          const currentProcessed = (percent / 100) * this.currentItem.duration;
-          const globalProcessed = this.processedDuration + currentProcessed;
-          const globalPercent = this.totalDuration > 0 ? (globalProcessed / this.totalDuration) * 100 : percent;
+    try {
+      this.compressFunction(
+        this.currentItem,
+        outputPath,
+        (percent, eta) => {
+          // Callback de progresso
+          if (this.onItemProgress) {
+            const currentProcessed = (percent / 100) * this.currentItem.duration;
+            const globalProcessed = this.processedDuration + currentProcessed;
+            const globalPercent = this.totalDuration > 0 ? (globalProcessed / this.totalDuration) * 100 : percent;
 
-          const totalElapsedTime = (Date.now() - this.startTime) / 1000;
-          const globalEta = globalPercent > 0 
-            ? (totalElapsedTime / (globalPercent / 100)) - totalElapsedTime 
-            : 0;
+            const totalElapsedTime = (Date.now() - this.startTime) / 1000;
+            const globalEta = globalPercent > 0 
+              ? (totalElapsedTime / (globalPercent / 100)) - totalElapsedTime 
+              : 0;
 
-          this.onItemProgress(this.currentItem, percent, eta, globalPercent, globalEta);
+            this.onItemProgress(this.currentItem, percent, eta, globalPercent, globalEta);
+          }
+        },
+        (finalPath) => {
+          // Callback de Sucesso
+          this.processedDuration += this.currentItem.duration;
+          this.currentItem.status = 'completed';
+          const outputSize = fs.existsSync(finalPath) ? fs.statSync(finalPath).size : 0;
+          if (this.onItemSuccess) this.onItemSuccess(this.currentItem, outputSize, finalPath);
+          this._processNext();
+        },
+        (errMessage) => {
+          // Callback de Erro
+          this.currentItem.status = 'error';
+          this.processedDuration += this.currentItem.duration;
+          if (this.onItemError) this.onItemError(this.currentItem, errMessage);
+          this._processNext();
         }
-      },
-      (finalPath) => {
-        // Callback de Sucesso
-        this.processedDuration += this.currentItem.duration;
-        this.currentItem.status = 'completed';
-        const outputSize = fs.existsSync(finalPath) ? fs.statSync(finalPath).size : 0;
-        if (this.onItemSuccess) this.onItemSuccess(this.currentItem, outputSize, finalPath);
-        this._processNext();
-      },
-      (errMessage) => {
-        // Callback de Erro
-        this.currentItem.status = 'error';
-        if (this.onItemError) this.onItemError(this.currentItem, errMessage);
-        this._processNext();
-      }
-    );
+      );
+    } catch (err) {
+      this.currentItem.status = 'error';
+      this.processedDuration += this.currentItem.duration;
+      if (this.onItemError) this.onItemError(this.currentItem, err.message || String(err));
+      this._processNext();
+    }
   }
 
   _realCompress(item, outputPath, onProgress, onSuccess, onError) {
