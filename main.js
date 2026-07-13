@@ -75,19 +75,23 @@ ipcMain.handle('select-directory', async () => {
   if (result.canceled || result.filePaths.length === 0) return [];
 
   const dirPath = result.filePaths[0];
-  const files = fs.readdirSync(dirPath);
+  const files = await fs.promises.readdir(dirPath);
   const videoExtensions = ['.mp4', '.mkv', '.avi', '.mov', '.flv', '.webm'];
   const videoFiles = [];
 
   for (const file of files) {
-    const filePath = path.join(dirPath, file);
-    const stat = fs.statSync(filePath);
-    if (stat.isFile() && videoExtensions.includes(path.extname(file).toLowerCase())) {
-      videoFiles.push({
-        filePath,
-        fileName: file,
-        size: stat.size
-      });
+    try {
+      const filePath = path.join(dirPath, file);
+      const stat = await fs.promises.stat(filePath);
+      if (stat.isFile() && videoExtensions.includes(path.extname(file).toLowerCase())) {
+        videoFiles.push({
+          filePath,
+          fileName: file,
+          size: stat.size
+        });
+      }
+    } catch (error) {
+      // Ignora falhas de leitura de atributos (ex: permissões ou link simbólico corrompido)
     }
   }
   return videoFiles;
