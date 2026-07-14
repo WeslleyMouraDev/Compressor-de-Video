@@ -144,6 +144,7 @@ describe('CompressionQueue', () => {
       outputOptions: jest.fn().mockReturnThis(),
       videoFilters: jest.fn().mockReturnThis(),
       audioCodec: jest.fn().mockReturnThis(),
+      audioBitrate: jest.fn().mockReturnThis(),
       on: jest.fn().mockReturnThis(),
       save: jest.fn().mockReturnThis()
     };
@@ -164,7 +165,8 @@ describe('CompressionQueue', () => {
     expect(mockFfmpegCmd.videoCodec).toHaveBeenCalledWith('libx265');
     expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith(['-crf', '19', '-preset', 'veryfast']);
     expect(mockFfmpegCmd.videoFilters).toHaveBeenCalledWith('scale=1920:-2');
-    expect(mockFfmpegCmd.audioCodec).toHaveBeenCalledWith('copy');
+    expect(mockFfmpegCmd.audioCodec).toHaveBeenCalledWith('aac');
+    expect(mockFfmpegCmd.audioBitrate).toHaveBeenCalledWith('128k');
     expect(mockFfmpegCmd.save).toHaveBeenCalledWith('output.mp4');
   });
 
@@ -174,6 +176,7 @@ describe('CompressionQueue', () => {
       outputOptions: jest.fn().mockReturnThis(),
       videoFilters: jest.fn().mockReturnThis(),
       audioCodec: jest.fn().mockReturnThis(),
+      audioBitrate: jest.fn().mockReturnThis(),
       on: jest.fn().mockReturnThis(),
       save: jest.fn().mockReturnThis()
     };
@@ -194,7 +197,8 @@ describe('CompressionQueue', () => {
     expect(mockFfmpegCmd.videoCodec).toHaveBeenCalledWith('hevc_nvenc');
     expect(mockFfmpegCmd.outputOptions).toHaveBeenCalledWith(['-cq', '23']);
     expect(mockFfmpegCmd.videoFilters).toHaveBeenCalledWith('scale=1280:-2');
-    expect(mockFfmpegCmd.audioCodec).toHaveBeenCalledWith('copy');
+    expect(mockFfmpegCmd.audioCodec).toHaveBeenCalledWith('aac');
+    expect(mockFfmpegCmd.audioBitrate).toHaveBeenCalledWith('128k');
     expect(mockFfmpegCmd.save).toHaveBeenCalledWith('output.mp4');
   });
 
@@ -204,6 +208,7 @@ describe('CompressionQueue', () => {
       outputOptions: jest.fn().mockReturnThis(),
       videoFilters: jest.fn().mockReturnThis(),
       audioCodec: jest.fn().mockReturnThis(),
+      audioBitrate: jest.fn().mockReturnThis(),
       on: jest.fn().mockReturnThis(),
       save: jest.fn().mockReturnThis()
     };
@@ -229,6 +234,7 @@ describe('CompressionQueue', () => {
       outputOptions: jest.fn().mockReturnThis(),
       videoFilters: jest.fn().mockReturnThis(),
       audioCodec: jest.fn().mockReturnThis(),
+      audioBitrate: jest.fn().mockReturnThis(),
       on: jest.fn().mockReturnThis(),
       save: jest.fn().mockReturnThis()
     };
@@ -255,6 +261,8 @@ describe('CompressionQueue', () => {
       outputOptions: jest.fn().mockReturnThis(),
       videoFilters: jest.fn().mockReturnThis(),
       audioCodec: jest.fn().mockReturnThis(),
+      audioBitrate: jest.fn().mockReturnThis(),
+      audioBitrate: jest.fn().mockReturnThis(),
       on: jest.fn().mockReturnThis(),
       save: jest.fn().mockReturnThis()
     };
@@ -282,6 +290,7 @@ describe('CompressionQueue', () => {
       outputOptions: jest.fn().mockReturnThis(),
       videoFilters: jest.fn().mockReturnThis(),
       audioCodec: jest.fn().mockReturnThis(),
+      audioBitrate: jest.fn().mockReturnThis(),
       on: jest.fn().mockImplementation((event, handler) => {
         eventHandlers[event] = handler;
         return mockFfmpegCmd;
@@ -323,6 +332,7 @@ describe('CompressionQueue', () => {
       outputOptions: jest.fn().mockReturnThis(),
       videoFilters: jest.fn().mockReturnThis(),
       audioCodec: jest.fn().mockReturnThis(),
+      audioBitrate: jest.fn().mockReturnThis(),
       on: jest.fn().mockImplementation((event, handler) => {
         eventHandlers[event] = handler;
         return mockFfmpegCmd;

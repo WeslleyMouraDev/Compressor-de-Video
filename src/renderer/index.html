@@ -55,11 +55,19 @@
         <div class="setting-group">
           <label>Formato de Vídeo</label>
           <div class="pill-selector" id="codec-selector">
-            <button class="pill active" data-value="hevc">H.265 (HEVC)</button>
-            <button class="pill" data-value="h264">H.264</button>
+            <button class="pill" data-value="hevc">H.265 (HEVC)</button>
+            <button class="pill active" data-value="h264">H.264 (Recomendado)</button>
           </div>
         </div>
       </div>
+      <label class="toggle-row" id="replace-toggle-label">
+        <span class="toggle-label-text">
+          <span class="toggle-title">Substituir arquivo original</span>
+          <span class="toggle-desc">O arquivo comprimido sobrescreve o original no lugar</span>
+        </span>
+        <input type="checkbox" id="replace-original-toggle" role="switch">
+        <span class="toggle-slider"></span>
+      </label>
       <button id="btn-start" class="btn action-btn">Iniciar Compressão</button>
     </section>
 

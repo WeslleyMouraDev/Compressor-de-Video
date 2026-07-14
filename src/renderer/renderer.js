@@ -159,6 +159,7 @@ btnStart.addEventListener('click', async () => {
   const resolution = resolutionSelector.querySelector('.pill.active').dataset.value;
   const codecSelector = document.getElementById('codec-selector');
   const codec = codecSelector.querySelector('.pill.active').dataset.value;
+  const replaceOriginal = document.getElementById('replace-original-toggle').checked;
 
   btnStart.disabled = true;
   btnStart.textContent = 'Processando...';
@@ -173,7 +174,8 @@ btnStart.addEventListener('click', async () => {
       tasks: videoQueue,
       quality,
       resolution,
-      codec
+      codec,
+      replaceOriginal
     });
 
     if (result && result.success) {

@@ -31,14 +31,15 @@ class CompressionQueue {
   }
 
   addToQueue(task) {
-    // task = { filePath, quality, resolution, codec }
+    // task = { filePath, quality, resolution, codec, replaceOriginal }
     const item = {
       id: Math.random().toString(36).substring(2, 9),
       filePath: task.filePath,
       fileName: path.basename(task.filePath),
       quality: task.quality,
       resolution: task.resolution,
-      codec: task.codec || 'hevc',
+      codec: task.codec || 'h264',
+      replaceOriginal: task.replaceOriginal || false,
       originalSize: fs.existsSync(task.filePath) ? fs.statSync(task.filePath).size : 0,
       duration: 0,
       status: 'pending'
@@ -141,9 +142,29 @@ class CompressionQueue {
           // Callback de Sucesso
           this.processedDuration += this.currentItem.duration;
           this.currentItem.status = 'completed';
-          const outputSize = fs.existsSync(finalPath) ? fs.statSync(finalPath).size : 0;
-          if (this.onItemSuccess) this.onItemSuccess(this.currentItem, outputSize, finalPath);
-          this._processNext();
+
+          const finalize = (reportedPath) => {
+            const outputSize = fs.existsSync(reportedPath) ? fs.statSync(reportedPath).size : 0;
+            if (this.onItemSuccess) this.onItemSuccess(this.currentItem, outputSize, reportedPath);
+            this._processNext();
+          };
+
+          if (this.currentItem.replaceOriginal) {
+            // Substituir o arquivo original pelo comprimido
+            fs.rename(finalPath, this.currentItem.filePath, (err) => {
+              if (err) {
+                // Se rename falhar (ex: drives diferentes), tenta via copy+delete
+                fs.copyFile(finalPath, this.currentItem.filePath, (copyErr) => {
+                  if (!copyErr) fs.unlink(finalPath, () => {});
+                  finalize(this.currentItem.filePath);
+                });
+              } else {
+                finalize(this.currentItem.filePath);
+              }
+            });
+          } else {
+            finalize(finalPath);
+          }
         },
         (errMessage) => {
           // Callback de Erro
@@ -203,8 +224,16 @@ class CompressionQueue {
       command.videoFilters('scale=1280:-2');
     }
 
-    // Evita travar os metadados de áudio, mantendo cópia sem re-encoding para velocidade
-    command.audioCodec('copy');
+    // Áudio: sempre re-encodar para AAC 128k (máxima compatibilidade com WhatsApp, iPhone, etc.)
+    command.audioCodec('aac').audioBitrate('128k');
+
+    // Container MP4 com faststart para compatibilidade de streaming (exigido pelo WhatsApp)
+    command.outputOptions(['-movflags', '+faststart']);
+
+    // H.264: adicionar perfil de compatibilidade máxima
+    if (encoder === 'libx264') {
+      command.outputOptions(['-profile:v', 'main', '-level', '3.1']);
+    }
 
     // Monitoramento de Progresso
     command.on('progress', (progress) => {

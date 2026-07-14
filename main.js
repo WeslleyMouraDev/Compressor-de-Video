@@ -111,7 +111,7 @@ ipcMain.handle('select-directory', async () => {
 });
 
 // 3. Início do Processo de Compressão
-ipcMain.handle('start-compression', async (event, { tasks, quality, resolution, codec }) => {
+ipcMain.handle('start-compression', async (event, { tasks, quality, resolution, codec, replaceOriginal }) => {
   if (compressionQueue && compressionQueue.active) {
     return { success: false, error: 'Uma compressão já está em andamento.' };
   }
@@ -163,7 +163,8 @@ ipcMain.handle('start-compression', async (event, { tasks, quality, resolution, 
       filePath: task.filePath,
       quality,
       resolution,
-      codec
+      codec,
+      replaceOriginal: !!replaceOriginal
     });
     queuedItems.push(item);
   }

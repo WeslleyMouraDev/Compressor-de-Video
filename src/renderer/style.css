@@ -202,6 +202,78 @@ body {
   display: none !important;
 }
 
+/* Toggle de substituir original */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.2s ease;
+}
+
+.toggle-row:hover {
+  border-color: rgba(138, 43, 226, 0.4);
+}
+
+.toggle-label-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toggle-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.toggle-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.toggle-row input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  flex-shrink: 0;
+  transition: background 0.25s ease;
+  border: 1px solid var(--border-color);
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.toggle-row input:checked ~ .toggle-slider {
+  background: rgba(138, 43, 226, 0.35);
+  border-color: rgba(138, 43, 226, 0.6);
+}
+
+.toggle-row input:checked ~ .toggle-slider::after {
+  transform: translateX(20px);
+  background: #a855f7;
+}
+
 .settings {
   display: grid;
   grid-template-columns: 1fr 1fr;
