@@ -4,13 +4,13 @@ title VideoSqueeze - Inicializador
 
 echo.
 echo ========================================================
-echo               🚀 VideoSqueeze Launcher
+echo               VideoSqueeze Launcher
 echo ========================================================
 echo.
 
 where node >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [ERRO] Node.js não foi encontrado no sistema!
+    echo [ERRO] Node.js nao foi encontrado no sistema!
     echo Por favor, instale o Node.js em: https://nodejs.org/
     echo.
     pause
@@ -18,10 +18,10 @@ if %errorlevel% neq 0 (
 )
 
 if not exist "node_modules\" (
-    echo [INFO] Pasta node_modules não encontrada. Instalando dependências...
+    echo [INFO] Pasta node_modules nao encontrada. Instalando dependencias...
     call npm install
     if %errorlevel% neq 0 (
-        echo [ERRO] Falha ao instalar as dependências.
+        echo [ERRO] Falha ao instalar as dependencias.
         pause
         exit /b 1
     )
@@ -29,10 +29,10 @@ if not exist "node_modules\" (
 
 echo [INFO] Iniciando o VideoSqueeze...
 echo.
-npm start
+call npm start
 
 if %errorlevel% neq 0 (
     echo.
-    echo [ERRO] Ocorreu uma falha ao executar a aplicação.
+    echo [ERRO] Ocorreu uma falha ao executar a aplicacao.
     pause
 )
