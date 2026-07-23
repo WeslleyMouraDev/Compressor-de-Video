@@ -1,12 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const ffmpeg = require('fluent-ffmpeg');
-const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
-const ffprobeInstaller = require('@ffprobe-installer/ffprobe');
+const { getFfmpegPath, getFfprobePath } = require('./ffmpeg-paths');
 
 // Configurando caminhos padrão dos binários nativos instalados
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-ffmpeg.setFfprobePath(ffprobeInstaller.path);
+ffmpeg.setFfmpegPath(getFfmpegPath());
+ffmpeg.setFfprobePath(getFfprobePath());
 
 class CompressionQueue {
   constructor(options = {}) {

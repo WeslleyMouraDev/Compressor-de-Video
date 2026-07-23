@@ -1,9 +1,9 @@
 const { exec } = require('child_process');
-const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+const { getFfmpegPath } = require('./ffmpeg-paths');
 
 function detectGPUEncoders() {
   return new Promise((resolve) => {
-    const ffmpegPath = ffmpegInstaller.path;
+    const ffmpegPath = getFfmpegPath();
     exec(`"${ffmpegPath}" -encoders`, (error, stdout) => {
       if (error || !stdout) {
         return resolve({ h264: 'libx264', hevc: 'libx265', type: 'CPU' });
